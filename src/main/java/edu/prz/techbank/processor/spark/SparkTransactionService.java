@@ -10,6 +10,8 @@ import org.apache.spark.sql.SparkSession;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import apache.spark.sql.functions;
+
 @Service
 @RequiredArgsConstructor
 public class SparkTransactionService {
@@ -29,9 +31,22 @@ public class SparkTransactionService {
         .as(Encoders.bean(Transaction.class));
   }
 
-  public List<Transaction> getTransactionsAsList(LocalDate date) {
-    return getTransactions(date)
-        .collectAsList();
+  // aktualizuję metodę dodając parametr account
+  public List<Transaction> getTransactionsAsList(LocalDate date, String account) {
+
+    // podstawowy zbiór przefiltrowany po dacie, ponieważ data jest wymaganym parametrem. Konto - jako opcjonalny - będzie kolejnym filtrem
+    Dataset<Transaction> dataset = getTransactions(date);
+
+    // sprawdzenie czy dodatkowy parametr został wprowadzony w zapytaniu
+    if (account != null) {
+        // filtruje wiersze, gdzie kolumna sender == account lub kolumna beneficiary == account
+        dataset = dataset.filter(
+            functions.col("sender").equalTo(account)
+            .or(functions.col("beneficiary").equalTo(account))
+        );
+    }
+    // wynik jako przefiltrowana lista
+    return dataset.collectAsList();
   }
 
 }

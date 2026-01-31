@@ -27,10 +27,12 @@ public class SparkProcessingController {
     return ResponseEntity.ok().build();
   }
 
-  @GetMapping("/transactions")
-  public ResponseEntity<List<Transaction>> getTransactions(@RequestParam LocalDate date) {
+  @GetMapping("/transactions")  // dodaję drugi parametr - account - jako dodatkowy
+  public ResponseEntity<List<Transaction>> getTransactions(@RequestParam LocalDate date, @RequestParam(required = false) String account) {
 
-    return ResponseEntity.ok(transactionService.getTransactionsAsList(date));
+    // nowo dodany parametr należy również przekazywać do serwizu
+    return ResponseEntity.ok(transactionService.getTransactionsAsList(date, account));
+    // zaktualizowałem również plik SparkTransactionService, by serwis obsługiwał zapytania z obydwoma parametrami
   }
 
   @GetMapping("/turnover")
